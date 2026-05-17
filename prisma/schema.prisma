@@ -1,0 +1,45 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  price       Float
+  badge       String
+  imageUrl    String
+  color       String
+  createdAt   DateTime @default(now())
+}
+
+model Order {
+  id              String   @id @default(uuid())
+  orderIdString   String
+  sum             Float
+  status          String
+  date            String
+  createdAt       DateTime @default(now())
+}
+
+model SystemLog {
+  id        String   @id @default(uuid())
+  status    String
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model CallLog {
+  id         String   @id @default(uuid())
+  clientName String
+  phone      String
+  status     String
+  transcript String
+  summary    String
+  createdAt  DateTime @default(now())
+}
