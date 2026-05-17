@@ -4,14 +4,17 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export async function GET() {
-  const products = await prisma.product.findMany({ orderBy: { createdAt: 'desc' } });
+  const products = await prisma.product.findMany({ 
+    include: { category: true },
+    orderBy: { createdAt: 'desc' } 
+  });
   return NextResponse.json(products);
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    let { title, description, price, badge, imageUrl, color } = body;
+    let { title, description, price, badge, imageUrl, color, categoryId } = body;
 
     // Взаимодействие с OpenRouter ИИ для полировки описания
     if (process.env.OPENROUTER_API_KEY) {
@@ -40,7 +43,15 @@ export async function POST(req: Request) {
     }
 
     const product = await prisma.product.create({
-      data: { title, description, price, badge, imageUrl: imageUrl || "https://images.unsplash.com/photo-1542751371-adc38448a05e", color }
+      data: { 
+        title, 
+        description, 
+        price, 
+        badge, 
+        imageUrl: imageUrl || "https://images.unsplash.com/photo-1542751371-adc38448a05e", 
+        color,
+        categoryId
+      }
     });
 
     // Отправка уведомления в закрытый Telegram-канал
@@ -55,6 +66,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(product);
   } catch (error) {
+    console.error("Error creating product:", error);
     return NextResponse.json({ error: "Ошибка создания товара" }, { status: 500 });
   }
 }

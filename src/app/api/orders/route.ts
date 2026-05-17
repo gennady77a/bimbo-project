@@ -5,11 +5,17 @@ const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
-    const { sum } = await req.json();
+    const { sum, items } = await req.json();
     const orderId = "BMB-" + Math.floor(100000 + Math.random() * 900000);
     
     const order = await prisma.order.create({
-      data: { orderIdString: orderId, sum, status: "Ожидает оплаты ЕРИП", date: new Date().toLocaleDateString() }
+      data: { 
+        orderIdString: orderId, 
+        sum, 
+        status: "Ожидает оплаты ЕРИП", 
+        date: new Date().toLocaleDateString(),
+        itemsJson: JSON.stringify(items || [])
+      }
     });
 
     if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
@@ -23,6 +29,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(order);
   } catch (e) {
+    console.error("Error creating order:", e);
     return NextResponse.json({ error: "Ошибка ордера" }, { status: 500 });
   }
 }
